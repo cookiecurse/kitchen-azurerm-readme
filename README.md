@@ -18,7 +18,22 @@ If you're not using Chef Workstation and need to install the plugin as a gem run
 
 ### Configuration
 
-For the driver to interact with the Microsoft Azure Resource management REST API, a Service Principal needs to be configured with Contributor rights against the specific subscription being targeted. Using an Organizational (AAD) account and related password is no longer supported. To create a Service Principal and apply the correct permissions, you will need to [create an Azure service principal with the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest#create-a-service-principal) using the [Azure CLI](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/). Make sure you stay within the section titled 'Authenticate service principal with password - Azure CLI'.
+For the driver to interact with the Microsoft Azure Resource management REST API, a Service Principal needs to be configured with Contributor rights against the specific subscription being targeted or alternatively a new Custom Role needs to be created in the tenant with the following permissions:
+  Resource provider             Management
+- Microsoft Authorization       Partial
+- Microsoft Azure Monitor       Partial
+- Microsoft ClassicCompute      Partial
+- Microsoft Compute             All
+- Microsoft DevTest Labs        Partial
+- Microsoft Key Vault           Partial
+- Microsoft Network             Partial
+- Microsoft ResourceHealth      Partial
+- Microsoft Resources           Partial
+- Microsoft Storage             Partial
+- Microsoft Support             All
+- Microsoft.RecoveryServices    Partial
+
+Using an Organizational (AAD) account and related password is no longer supported. To create a Service Principal and apply the correct permissions, you will need to [create an Azure service principal with the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest#create-a-service-principal) using the [Azure CLI](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/). Make sure you stay within the section titled 'Authenticate service principal with password - Azure CLI'.
 
 If the above is TLDR then try this after `az login` using your target subscription ID and the desired SP name:
 
@@ -65,7 +80,7 @@ AZURE_CLIENT_SECRET="your-client-secret-here"
 AZURE_TENANT_ID="your-azure-tenant-id-here"
 ```
 
-Note that the environment variables, if set, take preference over the values in a configuration file.
+Note that the environment variables, if set, take preference over the values in a configuration file. Credential file or environment variables are not optional or alternative to User Assigned Identities if using a computer, but could potentially be ommited if using the kitchen setup from an Azure vm which is permissioned properly.
 
 After adjusting your ```~/.azure/credentials``` file you will need to adjust your ```kitchen.yml``` file to leverage the azurerm driver. Use the following examples to achieve this, then check your configuration with standard kitchen commands. For example,
 
@@ -509,6 +524,8 @@ Example postdeploy.json to enable MSI extention on VM:
 
 This example demonstrates how to enable a System Assigned Identity and User Assigned Identities on a Kitchen VM.
 Any combination of System and User assigned identities may be enabled, and multiple User Assigned Identities can be supplied.
+
+Credentials file or environment variables are still necessary with this configuration unless the kitchen deployment is from an Azure vm which is permissioned properly. Managed identities only target the kitchen vm.
 
 See the [Managed identities for Azure resources](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) documentation for more information on using Managed Service Identities.
 
